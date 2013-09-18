@@ -1,0 +1,55 @@
+macro "augmentation_luminance" {
+
+open("/Users/WannaGetHigh/workspace/M2/VisA/TP/tp1_image_couleur/images_2012/it1_72pp_sombre.bmp");
+
+// recuperation du ID de l'image
+image = getImageID();
+
+valeur = getNumber ("quelle augmentation (absolue) de luminance [0-255]",valeur);
+
+while (valeur > 255 && valeur >= 0) {
+	valeur = getNumber ("attention !! juste entre [0-255]",valeur);
+}
+
+setBatchMode(true);
+
+
+// récupération de la taille W x H du plan de fourier
+W = getWidth();
+H = getHeight();
+
+run("Duplicate...", "title=luminance_augmente_de_"+valeur);
+image_luminance_aug = getImageID();
+
+
+// 
+max_1 = 0; 
+i_max_1 = 0;
+j_max_1 = 0;
+
+for (j=0; j<H; j++) {
+   for (i=0; i<W; i++)
+	{
+	selectImage (image);
+	couleur_avant = getPixel(i,j);
+	R_avant = (couleur_avant & 0xff0000) >> 16;
+	G_avant = (couleur_avant & 0x00ff00) >> 8;
+	B_avant = (couleur_avant & 0x0000ff) ;
+	
+	R_apres = minOf(R_avant + valeur, 255);
+	G_apres = minOf(G_avant + valeur, 255);
+	B_apres = minOf(B_avant + valeur, 255);
+
+
+
+	couleur_apres = ((R_apres & 0xff ) << 16) + ((G_apres & 0xff) << 8) + B_apres & 0xff;
+
+
+	selectImage (image_luminance_aug);
+	setPixel(i,j,couleur_apres);
+      	}
+   }
+
+setBatchMode(false);
+
+}
