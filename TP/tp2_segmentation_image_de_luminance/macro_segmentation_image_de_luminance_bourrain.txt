@@ -1,0 +1,62 @@
+// Une macro-squelette calculer OTSU.
+
+macro "OTSU" {
+
+//seuil = 56
+//	open("/Users/WannaGetHigh/workspace/M2/VisA/TP/tp2_segmentation_image_de_luminance/bi_modal.tif");
+//seuil = 109
+//	open("/Users/WannaGetHigh/workspace/M2/VisA/TP/tp2_segmentation_image_de_luminance/bi_modal2.bmp");
+// seuil = 77
+	open("/Users/WannaGetHigh/workspace/M2/VisA/TP/tp2_segmentation_image_de_luminance/avion.bmp");
+
+	image = getImageID();
+
+	W = getWidth();
+	H = getHeight();
+
+	run("Duplicate...", "title=binarisee");
+	image_binaire = getImageID();
+
+	getHistogram (level,histo,256);
+
+	max = 0;
+	omega0 = 0;
+	seuil = 0;
+
+	for ( t = 1; t<= 255; t++ ) {
+
+		omega0 += histo[t];
+
+		omega1 = W*H - omega0;
+
+		// centre de gravite
+		mu0 = 0;
+		for ( j =0 ; j<= t; j++) {
+			mu0 += (j * histo[j]) / omega0;
+		}
+		
+		mu1 = 0;
+		for ( k =t+1 ; k<= 255; k++) {
+			mu1 += (k * histo[k]) / omega1;
+		}
+
+		// variance inter classe
+		sigmaB = sqrt( (omega0*omega1 / H*W) * pow(mu1-mu0, 2) );
+
+		if (max < sigmaB) {
+			max = sigmaB;
+			seuil = t;
+		}
+	}
+	
+	// affichage de l'histogramme
+	//print ("histo[",level[i],"] =", histo[i]);
+	
+	selectImage(image_binaire);
+
+	//i_max= 75;
+	print ("seuil max=",seuil);
+
+	setThreshold(0, seuil);
+	run("Convert to Mask");
+}
