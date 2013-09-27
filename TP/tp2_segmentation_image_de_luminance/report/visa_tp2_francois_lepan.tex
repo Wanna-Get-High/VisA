@@ -68,6 +68,9 @@
 
 On remarque que la m\'ethode d'Otsu permet de trouver un seuil automatiquement et qui soit le meilleur pour binariser l'image. En effet si on regarde l'image \emph{bi\_modal} (\emph{c.f.} ~ Fig. \ref{bi_modal}) on voit que si on choisi un seuil on doit obtenir une image ou l'on voit clairement l'apparition d'un cercle.
 
+Mais cette m\'ethode \`a ces limites en effet si on prend une image qui poss\`ede 3 niveaux de gris bien distinct cette m\'ethode trouvera un seuil qui ne s\'eparera que deux niveau de gris et non 3 (\emph{cf.} ~Fig.~\ref{3_classe}).
+
+
 \begin{figure}[ht]
 \begin{center}
 	\includegraphics[width=5cm]{images/bi_modal}
@@ -106,5 +109,12 @@ Voici les r\'esultat pour les deux images suivantes (\emph{bi\_modal2} et \emph{
 	\label{}
 \end{figure}
 
+\begin{figure}[ht]
+\begin{center}
+	\includegraphics[width=15cm]{images/3_classe.png}
+\end{center}
+	\caption{\`A gauche l'image \emph{3\_classe.tiff} et \`a droite la m\^eme image binaris\'ee par la m\'ethode d'Otsu}
+	\label{3_classe}
+\end{figure}
 
 \end{document}
