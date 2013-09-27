@@ -1,0 +1,138 @@
+// analyse en composantes principales puis
+// calculer OTSU avec trois modes.
+
+macro "Analyse_en_Composante_puis_OTSU_3_mode" {
+
+	// On recupere les 3 composantes en niveau de gris de l'image courante
+	run("Split Channels");
+
+	// on creer une pile de ces trois composantes afin de la passer 
+	// a la fonction PCA
+	run("Images to Stack", "name=Stack title=[] use");
+
+	// On utilise la fonction PCA qui va rechercher la composante la 
+	// plus significative (celle qui possede le plus d'information)
+	// et la mettre en haut de la pile.
+	run("PCA ");
+
+	// On selectionne la pile creer par PCA
+	selectWindow("PCA of Stack");
+
+	// on repasse l'image en 8-bit pour avoir des valeurs entre 0-255
+	run("8-bit");
+
+	// on calcule Otsu tri-modale sur l'image en niveau de gris
+	otsu_3_mode();
+}
+
+// fonction d'Otsu tri-modale
+function otsu_3_mode() {
+
+	// on recupere l'id de l'image en niveau de gris
+	image = getImageID();
+	
+	// on la duplique pour la comparer
+	run("Duplicate...", "title=trinarisee");
+	image_trinaire = getImageID();
+	
+	setBatchMode(true);
+
+	// on recupere la taille de l'image 
+	W = getWidth();
+	H = getHeight();
+
+	// on recupere son histogramme 
+	getHistogram (level,histo,256);
+
+	// initialisation des valeurs
+	max = 0;
+	omega0 = 0;
+	seuil1 = 0;
+	seuil2 = 0;
+
+	// centre de gravite total
+	mu = 0;
+	for ( i = 0; i<= 255; i++ ) {
+		mu += (i * histo[i]) / H*W;
+	}
+	
+	for ( t1 = 0; t1 <= 254; t1++ ) {
+	
+		// histogramme cumule
+		omega0 += histo[t1];
+		omega1 = 0;
+
+		for (t2 = t1+1; t2 <= 255; t2++) {
+
+			// 				histo
+			// |                                |
+			// |     |                          |
+			// |   | |   |              |       |
+			// | | | |   | |     |    | |       |
+			// | | | | | | | |   | |  | | |   | |
+			// |--------------------------------|
+			// |----w1----|----w2----|----w3----|
+
+			// calcule des histogrammes cumules
+			omega1 += histo[t2];
+
+			omega2 =  H*W - (omega0 + omega1);
+
+			// calcule des centres de gravite mu0, mu1, mu2
+			mu0 = 0;
+			for ( i = 0; i <= t1; i++) {
+				mu0 += (i * histo[i]);
+			}
+			if (omega0 != 0) mu0 = mu0 / omega0;
+			
+			mu1 = 0;
+			for ( k = t1+1; k <= t2; k++) {
+				mu1 += (k * histo[k]);
+			}
+			if (omega1 != 0) mu1 = mu1 / omega1;
+				
+			mu2 = 0;
+			for ( l = t2+1; l <= 255; l++) {
+				mu2 += (l * histo[l]);
+			}
+			if (omega2 != 0) mu2 = mu2 / omega2;
+
+			// calcule de la variance inter classe
+			sigmaB = (omega0*pow(mu0-mu,2) + omega1*pow(mu1-mu,2) + omega2*pow(mu2-mu,2)) / H*W;
+
+			// si la variance est maximale alors on a trouvé des meilleurs seuils 
+			if (max < sigmaB) {
+				max = sigmaB;
+				seuil1 = t1;
+				seuil2 = t2;
+			}
+		}
+	}
+	
+	// affichage des seuils
+	// print ("seuil1 =",seuil1);
+	// print ("seuil2 =",seuil2);
+	
+	// creation d'une image trinaire en fonction des deux seuils
+	selectImage(image_trinaire);
+
+	for ( i = 0; i < W; i++ ) {
+		for ( j = 0; j < H; j++ ) {
+			// on  recupere le pixel courant
+			p = getPixel(i,j);
+			
+			// on met 0 si p <= seuil1
+			// on met 127 si seuil1 < p < seuil2
+			// on met 255 si p >= seuil2
+			if (p <= seuil1) {
+				setPixel(i,j,0);
+			} else if (p > seuil1 && p < seuil2) {
+				setPixel(i,j,127);
+			} else {
+				setPixel(i,j,255);
+			}
+		}
+	}
+
+	setBatchMode(false);
+}
