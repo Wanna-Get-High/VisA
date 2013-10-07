@@ -35,7 +35,6 @@ public class Dct_ implements PlugInFilter {
 
 	@Override
 	public int setup(String arg, ImagePlus imp) {
-		// TODO Auto-generated method stub
 		this.imp = imp;
 		return PlugInFilter.DOES_32;
 	}
@@ -74,7 +73,7 @@ public class Dct_ implements PlugInFilter {
 		}
 
 		int poids=0;
-		for(List l : listOfList)
+		for(List<Float> l : listOfList)
 			poids+=l.size();
 		
 		System.out.println(poids+"/"+(fp.getWidth()*fp.getHeight()));
@@ -82,7 +81,6 @@ public class Dct_ implements PlugInFilter {
 	}
 
 	private boolean showDialog() {
-		// TODO Auto-generated method stub
 		GenericDialog g=new GenericDialog("choix qualite");
 		g.addSlider("qualite", 0, 100, 80);
 		g.showDialog();

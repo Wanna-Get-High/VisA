@@ -43,11 +43,10 @@ public class Laplacien_ implements PlugInFilter, DialogListener {
 
 		// Titre et extension de l'image source
 		String titre = imp.getTitle();
-		String extension="";
+		//String extension="";
 		int index = titre.lastIndexOf('.');
 		
-		if (index>0)	extension = titre.substring(index);
-		else			index = titre.length();
+		if (index<=0) index = titre.length();
 		
 		titre = titre.substring(0,index);
 		
