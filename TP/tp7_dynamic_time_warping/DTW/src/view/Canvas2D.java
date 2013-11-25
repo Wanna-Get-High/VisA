@@ -32,9 +32,9 @@ public class Canvas2D extends Canvas implements MouseMotionListener, MouseListen
 
 	
 	public Canvas2D () {
-		this.RStroke = new Vector<Point>();
+		RStroke = new Vector<Point>();
 		TStroke = new Vector<Point>();
-
+		
 		addMouseListener(this);
 		addMouseMotionListener(this);
 		

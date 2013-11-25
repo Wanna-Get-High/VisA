@@ -9,7 +9,7 @@ import util.Matrix;
 public class DTW {
 
 	protected Vector<Couple> list;
-	
+
 	protected Vector<Point> referenceStroke;
 	protected Vector<Point> testStroke;
 	
@@ -73,6 +73,7 @@ public class DTW {
 				
 				dtw.items[i][j] = min +computeCost(i, j);
 				dtw.couple[i][j] = new Couple(iMin, jMin);
+
 			}
 		}
 		
@@ -95,6 +96,7 @@ public class DTW {
 		if ( x != 0 && x != couples.length-1) {
 			list.add(new Couple(x,y));
 		}
+
 		
 		while (!(x == 0 && y == 0)) {
 
@@ -110,6 +112,47 @@ public class DTW {
 		
 	}
 	
+	/**
+	 * Retrieve the minimum value of the neighbor ([i,j-1] [i-1,j] [i-1,j-1]) 
+	 * and store in Couple[][] of Matrix at [i,j] the index of the minimum value.
+	 * 
+	 * @param dtw the Matrix that is build
+	 * @param i the current reference index 
+	 * @param j the current test index
+	 * 
+	 * @return the minimum value of the neighbor
+	 */
+	private double getMinimumOfNeighbor(Matrix dtw, int i, int j) {
+		
+		if (dtw.items[i-1][j] < dtw.items[i][j-1]) {
+			if (dtw.items[i-1][j] < dtw.items[i-1][j-1]) {
+				return couple(dtw, i, j, i-1, j);
+			}
+		} else {
+			if (dtw.items[i][j-1] < dtw.items[i-1][j-1]) {
+				return couple(dtw, i, j, i, j-1);
+			}
+		}
+		
+		return couple(dtw, i, j, i-1, j-1);
+	}
+	
+	/**
+	 * Retrieve the minimum founded value (see getMinimumOfNeighbor) 
+	 * and store the indexes of that value in the Couple[][] matrix. 
+	 * 
+	 * @param dtw the Matrix that is builded -> needed to acces to Couple
+	 * @param x1 the current reference index 
+	 * @param y1 the current test index
+	 * @param x2 the minimum neighbor reference index 
+	 * @param y2 the minimum neighbor test index 
+	 * @return
+	 */
+	private double couple(Matrix dtw, int x1, int y1, int x2, int y2) {
+		dtw.couple[x1][y1] = new Couple(x2, y2);
+		return dtw.items[x1][y1];
+		
+	}
 
 	/**
 	 * compute the cost between 2 points of the Vectors
