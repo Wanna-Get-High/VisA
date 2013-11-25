@@ -1,6 +1,4 @@
 import DCT.DCT2D;
-
-import DCT.DCT2D;
 import ij.ImagePlus;
 import ij.plugin.filter.PlugInFilter;
 import ij.process.FloatProcessor;
