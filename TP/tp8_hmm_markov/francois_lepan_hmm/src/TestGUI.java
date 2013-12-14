@@ -8,8 +8,8 @@ import javax.swing.*;
 public class TestGUI {
 
 	TestGUI() {
-		
-		JFrame fen = new JFrame("HMM");
+
+		JFrame fen = new JFrame("HMM - G. Casiez");
 		fen.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		fen.setLocationByPlatform(true);
 		
@@ -22,10 +22,8 @@ public class TestGUI {
 	}
 
 	public static void main(String[] args) {
-		
-	    //	Schedule a job for the event-dispatching thread:
-	    //		creating and showing this application's GUI.
-		
+	    //Schedule a job for the event-dispatching thread:
+	    //creating and showing this application's GUI.
 	    javax.swing.SwingUtilities.invokeLater(new Runnable() {
 		    public void run() {
 			new TestGUI();

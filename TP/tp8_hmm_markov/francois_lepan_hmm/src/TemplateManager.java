@@ -11,18 +11,20 @@ import java.util.List;
 import java.util.Iterator;
 
 
-public class TemplateManager {
-	
+public class TemplateManager
+{
 	private Vector<Template> theTemplates;
 	private org.jdom.Document document;
 	private Element racine;
+	private String fileName;
 	
-	public TemplateManager(String filename) {
+	TemplateManager(String filename) {
 		theTemplates = new Vector<Template>();
+		this.fileName = filename;
 		loadFile(filename);
 	}
 	
-	public void loadFile(String filename) {
+	void loadFile(String filename) {
 		SAXBuilder sxb = new SAXBuilder();
 		
 		// Open xml file

@@ -43,7 +43,7 @@ public class HMM {
 		classMap = new HashMap<String, GestureClass>();
 		templateManager = new TemplateManager("gestures.xml");
 		gesturesProbabilities = new Vector<GestureProbability>();
-		//Training();
+		Training();
 	}
 	
 	/**
@@ -198,14 +198,44 @@ public class HMM {
 		System.out.println("Recognition rate of examples = " + good/(cpt*1.0));
 	}
 	
-	
+
 	/**
-	 * Compute features 
+	 * Compute the features.
+	 * 
+	 * @param points the points from which we compute the features.
+	 *   
+	 * @return the computed features.
 	 */
-	
 	public ArrayList<Double> computeFeatures(Vector<Point> points) {
 		
-		return null;
+		int size = points.size()-1;
+		ArrayList<Double> features = new ArrayList<Double>();
+		
+		for (int i = 1; i < size; i++) {
+			
+			Point p0 = points.get(i-1);
+			Point p1 = points.get(i);
+			
+			// we check the value of Y in order to get the good angle.
+			if (p1.getY() >= p0.getY()) {
+				features.add(Math.PI - this.angle(p0, p1));
+			} else {
+				features.add(this.angle(p0, p1));
+			}
+		}
+		
+		return features;
+	}
+	
+	/**
+	 * Compute the angle between the two points and an horizontal line.
+	 * 
+	 * @param p1 the first point.
+	 * @param p2 the second point.
+	 * @return the radiant value of the angle 
+	 */
+	private double angle(Point p1, Point p2) {
+		return Math.abs(Math.atan2(p1.getY()-p1.getY(), p1.getX()-p2.getX()));
 	}
 	
 
@@ -249,14 +279,105 @@ public class HMM {
 	}		
 
 	/**
-	 * Resample points to have one point each deltaTms ms
-	 * @param p0
-	 * @param p1
-	 * @return
+	 * Resample points to have one point each deltaTms.
+	 * 
+	 * @param pts		the recorded points points 
+	 * @param deltaTms	the timestamp between each new resampled point.
+	 * @return the list of new points.
 	 */	
-	
-	protected Vector<Point> resample(Vector<PointData> pts, int deltaTms) {
-		Vector<Point> res = new Vector<Point>();
+	protected Vector<Point> resample(Vector<PointData> pts, int deltaTms) { 
+		Vector<Point> res 		= new Vector<Point>();
+		long previousTimestamp 	= pts.get(0).getTimeStamp();
+		long deltaTimeStamp 	= deltaTms;
+		int size 				= pts.size();
+		int index 				= 1;
+		Point previousPoint;
+		long currentDeltaTms;
+
+		// we add the first point
+		res.add(pts.get(0).getPoint());
+
+		// for each recorded point (but not the last one)
+		while (index < size-1) {
+			
+			// we get the current point
+			PointData currentPoint = pts.get(index);
+			
+			// we set the delta timestamp 
+			currentDeltaTms = currentPoint.getTimeStamp() - previousTimestamp;
+
+			// if the current point was taken at the same moment as the time stamp
+			if ( (deltaTimeStamp - currentDeltaTms) == 0) {
+				
+				// we add the current point.
+				res.add(currentPoint.getPoint());
+				
+				// we set the previous time stamp 
+				previousTimestamp = currentPoint.getTimeStamp();
+				
+				// we reset the delta time stamp. 
+				deltaTimeStamp = deltaTms;
+				
+				// then we go to the next point.
+				index++;
+			}
+			
+			// if the recorded point was taken after the time stamp.
+			else if ((deltaTimeStamp - currentDeltaTms) < 0) {
+				
+				// we get the previously resampled point
+				previousPoint = res.get(res.size()-1);
+				
+				// we set the ratio to position the new point between 
+				// the current recorded point and the previously resampled point.
+				double ratio = (deltaTms/currentDeltaTms);
+				
+				// we set the position of the new resampled point with a linear interpolation
+				// between the current recorded point and the previously resampled point
+				double x = previousPoint.getX() + (currentPoint.getX() - previousPoint.getX())*ratio;
+				double y = previousPoint.getY() + (currentPoint.getY() - previousPoint.getY())*ratio;
+				
+				// we increment the previousTimeStamp by deltaTms to fit the 
+				// position of the newly added point.
+				previousTimestamp += deltaTms;
+				
+				// we reset the delta time stamp.
+				deltaTimeStamp = deltaTms;
+				
+				// then we add the new resampled point.
+				res.add(new Point((int)x, (int)y));
+			} 
+			
+			// else if the point is taken before the time stamp
+			else {
+				// we decrement the delta time stamp by the current one in order to
+				// be able to detect the next point to add.
+				// for example : 
+				//
+				//		5ms						deltaTms = 10 ms
+				// o---------o
+				//			  \					- the reampled point
+				//			   -
+				//			    \ 9ms
+				//				 \
+				//				  o
+				//
+				// the second point is taken at 5ms the third one 9 ms after the second one.
+				// if the delta time stamp is at 10 ms we won't add a point between the second and third recorded point.
+				deltaTimeStamp -= currentDeltaTms;
+				
+			
+				// we set the previous time stamp
+				previousTimestamp = currentPoint.getTimeStamp();
+				
+				// then we go to the next recorded point.
+				index++;
+			}
+
+		}
+		
+		// then we add the last recorded point.
+		res.add(pts.get(size-1).getPoint());
 		
 		return res;
 	}
@@ -265,5 +386,4 @@ public class HMM {
 		return resampledRawPoints;
 	}
 
-	
 }
